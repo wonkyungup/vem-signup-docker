@@ -1,0 +1,27 @@
+FROM ubuntu:18.04
+
+EXPOSE 3000
+RUN apt update -y && apt upgrade -y
+
+# install node
+RUN apt install -y curl sudo
+RUN sudo curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -
+RUN apt install -y nodejs build-essential
+RUN npm install -g npm@latest
+
+# install vue, express
+RUN npm install -g @vue/cli
+RUN npm install -g express
+
+# copy src
+RUN mkdir -p /app/frontend
+RUN mkdir -p /app/backend
+COPY ./src/frontend/ /app/frontend
+COPY ./src/backend/ /app/backend
+
+# npm install
+WORKDIR /app/frontend/
+RUN npm install 
+WORKDIR /app/backend/
+RUN npm install
+WORKDIR /

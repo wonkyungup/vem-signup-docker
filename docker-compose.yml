@@ -1,0 +1,16 @@
+version: '3.0'
+services:
+  web:
+    container_name: web
+    build:
+      context: ./
+      dockerfile: images/web
+    ports:
+      - "3000:3000"
+    command: /bin/bash -c "cd /app/frontend; npm cache clean --force && npm run build; cd /app/backend/; npm run start;"
+  db:
+    container_name: db
+    image: mongo:latest
+    restart: always
+    ports:
+     - "27012:27017"
