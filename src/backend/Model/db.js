@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 // const url = 'mongodb://localhost:27017/members'
-const url = 'mongodb://172.18.0.2:27017/members'
+const url = 'mongodb://172.21.0.2:27017/members'
 
 module.exports = () => {
     mongoose.connect(url,
