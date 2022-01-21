@@ -11,20 +11,26 @@ services:
     container_name: web
     build:
       context: ./
-      dockerfile: images/web
+      dockerfile: images/web/image
     networks:
       brnet:
         ipv4_address: 172.21.0.3  
     ports:
       - "3000:3000"
-    depends_on:
-      - db
-    command: /bin/bash -c "cd /app/frontend; npm cache clean --force && npm run build; cd /app/backend/; npm run start;"
+    entrypoint:
+      - sh
+      - -c
+      - "sh /app/docker-entrypoint.sh"
+
   db:
     container_name: db
-    image: mongo:latest
+    build:
+      context: ./
+      dockerfile: images/db/image
     networks:
       brnet:
         ipv4_address: 172.21.0.2
     ports:
      - "27777:27017"
+    volumes:
+      - ./data:/data/db
