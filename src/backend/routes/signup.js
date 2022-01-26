@@ -1,71 +1,31 @@
+import mongodController from '../Model/db'
+import { encrypt } from '../assets/security'
+
 const express = require('express')
 const router = express.Router()
-const mongoose = require('mongoose')
+
+const STR_SIGNUP_EMAIL_DUPLICATE = 'signup_email_duplicate'
+const STR_SIGNUP_PROFILENAME_DUPLICATE = 'signup_profileName_duplicate'
 
 /* GET home page. */
 router.post('/', async (req, res, next) => {
     const email = req.body.email
     const profileName = req.body.profileName
-    const password = req.body.password
+    const password = encrypt(req.body.password)
 
     // mongoDB
-    const members = mongoose.model('members')
-    const newUser = new members({
-        email: email,
-        profileName: profileName,
-        password: password
-    })
+    const members = new mongodController()
+    const dbEmail = await members.dbCheckEmailSync(email)
+    const dbProfileName = await members.dbCheckProfileNameSync(profileName)
 
-    if (await isCheckEmail(members, email) == null) {
-        // check name
-        if (await isCheckProfileName(members, profileName) == null) {
-            // save
-            newUser.save()
-                .then(() => {
-                    res.send({ msg: 'signup' })
-                })
-        } else {
-            res.send({ msg: 'ChangeProfileName' })
-        }
+    if (dbEmail.length > 0) {
+        res.send({ index: 0, content: STR_SIGNUP_EMAIL_DUPLICATE })
+    } else if (dbProfileName.length > 0) {
+        res.send({ index: 0, content: STR_SIGNUP_PROFILENAME_DUPLICATE })
     } else {
-        res.send({ msg: 'ChangeEmail' })
+        members.dbInsertAccount(email, profileName, password)
+        res.send({ index: 1, content: null })
     }
 })
-
-function isCheckEmail (members, email) {
-    return new Promise(resolve => {
-        members.find({ email: email }, (err, user) => {
-            if (err) {
-                console.log('email find error')
-            }
-
-            try {
-                // duplication email
-                resolve(user[0].email)
-            } catch (err) {
-                // new email
-                resolve(null)
-            }
-        })
-    })
-}
-
-function isCheckProfileName (members, profileName) {
-    return new Promise(resolve => {
-        members.find({ profileName: profileName }, (err, user) => {
-            if (err) {
-                console.log('profileName find error')
-            }
-
-            try {
-                // duplication profileName
-                resolve(user[0].profileName)
-            } catch (err) {
-                // new profileName
-                resolve(null)
-            }
-        })
-    })
-}
 
 module.exports = router
